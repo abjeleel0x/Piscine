@@ -1,118 +1,171 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 )
 
-// Generate the string for a specific quad type given dimensions x and y
-func generateQuad(x, y int, typeQuad string) string {
+func quadA(x, y int) string {
 	if x <= 0 || y <= 0 {
 		return ""
 	}
-	var result strings.Builder
-
-	for j := 1; j <= y; j++ {
-		for i := 1; i <= x; i++ {
-			if j == 1 { // Top row
-				if i == 1 {
-					result.WriteByte(getCorner(typeQuad, "topL"))
-				} else if i == x {
-					result.WriteByte(getCorner(typeQuad, "topR"))
+	var res strings.Builder
+	for row := 1; row <= y; row++ {
+		for col := 1; col <= x; col++ {
+			if row == 1 || row == y {
+				if col == 1 || col == x {
+					res.WriteRune('o')
 				} else {
-					result.WriteByte(getBorder(typeQuad, "h"))
+					res.WriteRune('-')
 				}
-			} else if j == y { // Bottom row
-				if i == 1 {
-					result.WriteByte(getCorner(typeQuad, "botL"))
-				} else if i == x {
-					result.WriteByte(getCorner(typeQuad, "botR"))
+			} else {
+				if col == 1 || col == x {
+					res.WriteRune('|')
 				} else {
-					result.WriteByte(getBorder(typeQuad, "h"))
-				}
-			} else { // Middle rows
-				if i == 1 || i == x {
-					result.WriteByte(getBorder(typeQuad, "v"))
-				} else {
-					result.WriteByte(' ')
+					res.WriteRune(' ')
 				}
 			}
 		}
-		result.WriteByte('\n')
+		res.WriteRune('\n')
 	}
-	return result.String()
+	return res.String()
 }
 
-func getCorner(q, pos string) byte {
-	switch q {
-	case "A":
-		return 'o'
-	case "B":
-		if pos == "topL" || pos == "botR" {
-			return '/'
-		}
-		return '\\'
-	case "C":
-		if pos == "topL" || pos == "topR" {
-			return 'A'
-		}
-		return 'C'
-	case "D":
-		if pos == "topL" || pos == "botL" {
-			return 'A'
-		}
-		return 'C'
-	case "E":
-		if pos == "topL" || pos == "botR" {
-			return 'A'
-		}
-		return 'C'
+func quadB(x, y int) string {
+	if x <= 0 || y <= 0 {
+		return ""
 	}
-	return ' '
+	var res strings.Builder
+	for row := 1; row <= y; row++ {
+		for col := 1; col <= x; col++ {
+			if row == 1 && col == 1 {
+				res.WriteRune('/')
+			} else if row == 1 && col == x {
+				res.WriteRune('\\')
+			} else if row == y && col == 1 {
+				res.WriteRune('\\')
+			} else if row == y && col == x {
+				res.WriteRune('/')
+			} else if row == 1 || row == y || col == 1 || col == x {
+				res.WriteRune('*')
+			} else {
+				res.WriteRune(' ')
+			}
+		}
+		res.WriteRune('\n')
+	}
+	return res.String()
 }
 
-func getBorder(q, dir string) byte {
-	if q == "A" || q == "B" {
-		if dir == "h" {
-			return '-'
-		}
-		return '|'
+func quadC(x, y int) string {
+	if x <= 0 || y <= 0 {
+		return ""
 	}
-	return 'B'
+	var res strings.Builder
+	for row := 1; row <= y; row++ {
+		for col := 1; col <= x; col++ {
+			if row == 1 && (col == 1 || col == x) {
+				res.WriteRune('A')
+			} else if row == y && (col == 1 || col == x) {
+				res.WriteRune('C')
+			} else if row == 1 || row == y || col == 1 || col == x {
+				res.WriteRune('B')
+			} else {
+				res.WriteRune(' ')
+			}
+		}
+		res.WriteRune('\n')
+	}
+	return res.String()
+}
+
+func quadD(x, y int) string {
+	if x <= 0 || y <= 0 {
+		return ""
+	}
+	var res strings.Builder
+	for row := 1; row <= y; row++ {
+		for col := 1; col <= x; col++ {
+			if (row == 1 && col == 1) || (row == y && col == 1) {
+				res.WriteRune('A')
+			} else if (row == 1 && col == x) || (row == y && col == x) {
+				res.WriteRune('C')
+			} else if row == 1 || row == y || col == 1 || col == x {
+				res.WriteRune('B')
+			} else {
+				res.WriteRune(' ')
+			}
+		}
+		res.WriteRune('\n')
+	}
+	return res.String()
+}
+
+func quadE(x, y int) string {
+	if x <= 0 || y <= 0 {
+		return ""
+	}
+	var res strings.Builder
+	for row := 1; row <= y; row++ {
+		for col := 1; col <= x; col++ {
+			if row == 1 && (col == 1 || col == x) {
+				res.WriteRune('A')
+			} else if row == y && (col == 1 || col == x) {
+				res.WriteRune('C')
+			} else if row == 1 || row == y {
+				res.WriteRune('B')
+			} else if col == 1 || col == x {
+				res.WriteRune('B')
+			} else {
+				res.WriteRune(' ')
+			}
+		}
+		res.WriteRune('\n')
+	}
+	return res.String()
 }
 
 func main() {
-	input, _ := io.ReadAll(os.Stdin)
-	if len(input) == 0 {
+	// Step 1: Read from stdin
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := io.ReadAll(reader)
+	content := string(input)
+
+	if strings.TrimSpace(content) == "" {
+		fmt.Println("Not a quad function")
 		return
 	}
 
-	strInput := string(input)
-	lines := strings.Split(strInput, "\n")
-	if len(lines) > 0 && lines[len(lines)-1] == "" {
-		lines = lines[:len(lines)-1]
-	}
-
+	lines := strings.Split(strings.TrimRight(content, "\n"), "\n")
 	y := len(lines)
-	if y == 0 {
-		return
+	x := len([]rune(lines[0]))
+
+	matches := []string{}
+
+	// Step 2: Compare input to each quad
+	if content == quadA(x, y) {
+		matches = append(matches, fmt.Sprintf("[quadA] [%d] [%d]", x, y))
 	}
-	x := len(lines[0])
-
-	var results []string
-	quads := []string{"A", "B", "C", "D", "E"}
-
-	for _, q := range quads {
-		if generateQuad(x, y, q) == strInput {
-			results = append(results, fmt.Sprintf("[quad%s] [%d] [%d]", q, x, y))
-		}
+	if content == quadB(x, y) {
+		matches = append(matches, fmt.Sprintf("[quadB] [%d] [%d]", x, y))
+	}
+	if content == quadC(x, y) {
+		matches = append(matches, fmt.Sprintf("[quadC] [%d] [%d]", x, y))
+	}
+	if content == quadD(x, y) {
+		matches = append(matches, fmt.Sprintf("[quadD] [%d] [%d]", x, y))
+	}
+	if content == quadE(x, y) {
+		matches = append(matches, fmt.Sprintf("[quadE] [%d] [%d]", x, y))
 	}
 
-	if len(results) == 0 {
+	// Step 3: Print result
+	if len(matches) == 0 {
 		fmt.Println("Not a quad function")
 	} else {
-		fmt.Println(strings.Join(results, " || "))
+		fmt.Println(strings.Join(matches, " || "))
 	}
 }
