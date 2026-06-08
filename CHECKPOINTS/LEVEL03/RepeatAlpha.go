@@ -1,24 +1,24 @@
 package piscine
 
 func RepeatAlpha(s string) string {
-	var result string
-
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if c >= 'a' && c <= 'z' {
-			index := int(c - 'a' + 1)
-			for j := 0; j < index; j++ {
-				result += string(c)
+	result := ""
+	for _, char := range s {
+		if char >= 'a' && char <= 'z' {
+			// Repeat lowercase letter (char - 'a' + 1) times
+			repeatCount := int(char - 'a' + 1)
+			for i := 0; i < repeatCount; i++ {
+				result += string(char)
 			}
-		} else if c >= 'A' && c <= 'Z' {
-			index := int(c - 'A' + 1)
-			for j := 0; j < index; j++ {
-				result += string(c)
+		} else if char >= 'A' && char <= 'Z' {
+			// Repeat uppercase letter (char - 'A' + 1) times
+			repeatCount := int(char - 'A' + 1)
+			for i := 0; i < repeatCount; i++ {
+				result += string(char)
 			}
 		} else {
-			result += string(c)
+			// Non-alphabetic character → print once
+			result += string(char)
 		}
 	}
-
 	return result
 }
